@@ -8,6 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(morgan("tiny"));
 
+// Routes
 const UserRoute = require("./routers/users");
 const OrderRoute = require("./routers/orders");
 const ProductRoute = require("./routers/product");
