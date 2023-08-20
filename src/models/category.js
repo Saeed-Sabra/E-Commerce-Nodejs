@@ -1,12 +1,24 @@
 const mongoose = require("mongoose");
 
 const categorySchema = mongoose.Schema({
-  name: String,
-  image: String,
-  countInStock: {
-    type: Number,
-    required: [true, "Please enter the number of products in stock"],
+  name: {
+    type: String,
+    required: true,
   },
+
+  color: {
+    type: String,
+  },
+
+  icon: {
+    type: String,
+  },
+
+  // image: {
+  //   type: String,
+  // },
 });
 
 const Category = mongoose.model("Category", categorySchema);
+
+module.exports = Category;
