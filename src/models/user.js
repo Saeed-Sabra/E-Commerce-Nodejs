@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = mongoose.Schema({
   name: {
@@ -9,7 +10,7 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  passwordHash: {
+  password: {
     type: String,
     required: true,
   },
@@ -43,6 +44,16 @@ const userSchema = mongoose.Schema({
   },
 });
 
+//hash the plain text password before saving
+userSchema.pre("save", async function (next) {
+  const user = this;
+
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
+  next();
+});
+
 userSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
@@ -52,3 +63,5 @@ userSchema.set("toJSon", {
 });
 
 const User = mongoose.model("User", userSchema);
+
+module.exports = User;
