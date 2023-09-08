@@ -2,11 +2,15 @@ const express = require("express");
 const port = process.env.PORT;
 const morgan = require("morgan");
 require("./db/mongoose");
+const authJwt = require("../helpers/jwt");
+const errorHandler = require("../helpers/error-handler");
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan("tiny"));
+app.use(authJwt());
+app.use(errorHandler);
 
 // Routes
 const UserRoute = require("./routers/users");
