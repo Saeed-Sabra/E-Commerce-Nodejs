@@ -2,6 +2,7 @@ const express = require("express");
 const Product = require("../models/product");
 const Category = require("../models/category");
 const router = new express.Router();
+const multer = require("multer");
 
 // router.get("/", async (req, res) => {
 //   const products = await Product.find().populate("category");
@@ -28,18 +29,57 @@ router.get("/:id", async (req, res) => {
   res.status(200).send(products);
 });
 
-router.post("/", async (req, res, next) => {
-  const category = await Category.findById(req.body.category);
+const FILE_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
 
-  if (!category) {
-    return res.status(401).send({
-      error: "Category Not found",
-    });
-  }
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("invalid image type");
 
-  const product = new Product(req.body);
+    if (isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, "public/uploads");
+  },
+  filename: function (req, file, cb) {
+    const fileName = file.originalname.split(" ").join("-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${fileName}-${Date.now()}.${extension}`);
+  },
+});
 
+const upload = multer({ storage: storage });
+
+router.post("/", upload.single("image"), async (req, res, next) => {
   try {
+    const category = await Category.findById(req.body.category);
+
+    if (!category) {
+      return res.status(401).send({
+        error: "Category Not found",
+      });
+    }
+    const fileName = req.file.filename;
+    const basePath = `${req.protocol}://${req.get(
+      "host"
+    )}/public/uploads/${fileName}`;
+    const product = new Product({
+      name: req.body.name,
+      description: req.body.description,
+      richDescription: req.body.richDescription,
+      image: `${basePath}${fileName}`, // "http://localhost:3000/public/upload/image-2323232"
+      brand: req.body.brand,
+      price: req.body.price,
+      category: req.body.category,
+      countInStock: req.body.countInStock,
+      rating: req.body.rating,
+      numReviews: req.body.numReviews,
+      isFeatured: req.body.isFeatured,
+    });
     await product.save();
     res.status(201).send(product);
   } catch (e) {
