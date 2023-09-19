@@ -7,6 +7,7 @@ const errorHandler = require("../helpers/error-handler");
 
 const app = express();
 
+app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(authJwt());
